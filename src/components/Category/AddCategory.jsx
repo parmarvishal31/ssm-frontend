@@ -1,14 +1,17 @@
 import { Button, Divider, Form, Input, Space, Spin, Switch, Tabs } from "antd";
 import { InfoCircleOutlined } from "@ant-design/icons";
 import { useFormik } from "formik";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { categorySchema } from "../../Schema/categorySchema";
 import toast from "react-hot-toast";
-import { createCategory } from "../../api/categories";
-import { useNavigate } from "react-router-dom";
+import { createCategory, getCategorieById } from "../../api/categories";
+import { useNavigate, useParams } from "react-router-dom";
+
 function AddCategory() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const token = localStorage.getItem("token");
+  const { id } = useParams();
   const handleSwitch = (e) => {
     formik.values.status = e;
   };
@@ -21,23 +24,45 @@ function AddCategory() {
     },
     validationSchema: categorySchema,
     onSubmit: async (values) => {
-      console.log("values: ", values);
-      try {
-        setIsLoading(true);
-        const res = await createCategory(values);
-        if (res?.data?.success) {
-          toast.success(res.data.message);
-          navigate("/all-category");
-        } else {
-          console.log("run");
+      if (id) {
+        console.log(values);
+      } else {
+        try {
+          setIsLoading(true);
+          const res = await createCategory(values, token);
+          if (res?.data?.success) {
+            toast.success(res.data.message);
+            navigate("/all-category");
+          }
+        } catch (error) {
+          toast.error(error.response.data.message);
+        } finally {
+          setIsLoading(false);
         }
-      } catch (error) {
-        toast.error(error.response.data.message);
-      } finally {
-        setIsLoading(false);
       }
     },
   });
+
+  const getSingleCategory = async () => {
+    try {
+      const res = await getCategorieById(id, token);
+      if (res?.data?.success) {
+        console.log("res: ", res);
+        console.log(res?.data?.category);
+        formik.setValues({ ...res?.data?.category });
+      }
+    } catch (error) {
+      console.log("error: ", error);
+    }
+  };
+
+  const deleteCategory = () => {};
+
+  useEffect(() => {
+    if (id) {
+      getSingleCategory();
+    }
+  }, [id]);
   return (
     <>
       {isLoading && (
@@ -49,9 +74,17 @@ function AddCategory() {
         <header className="flex justify-end">
           <Space>
             <Button htmlType="submit" type="primary">
-              ADD
+              {id ? "UPDATE" : "ADD"}
             </Button>
             <Button type="default">CANCLE</Button>
+            <Button
+              onChange={() => deleteCategory()}
+              type="primary"
+              danger
+              ghost
+            >
+              Delete
+            </Button>
           </Space>
         </header>
         <main>
@@ -116,6 +149,7 @@ function AddCategory() {
                   <Switch
                     name="status"
                     defaultChecked={false}
+                    // checked={formik.values.status}
                     onChange={handleSwitch}
                   />
                 </Space>

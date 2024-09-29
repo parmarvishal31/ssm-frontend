@@ -21,7 +21,6 @@ export default function LoginPgae() {
       try {
         setIsLodding(true);
         const res = await Login(values);
-        console.log("res: ", res);
         if (res.data.success) {
           localStorage.setItem("token", res.data.token);
           dispatch(login(res.data.user));

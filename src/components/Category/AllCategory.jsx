@@ -9,7 +9,7 @@ import { allCategory } from "../../redux/categorySlice";
 function AllCategory() {
   const dispatch = useDispatch();
   const category = useSelector((state) => state.category.category);
-  console.log("category: ", category);
+  const token = localStorage.getItem("token");
 
   const columns = [
     {
@@ -33,7 +33,6 @@ function AllCategory() {
       title: "STATUS",
       dataIndex: "status",
       render: (status) => {
-        console.log("status: ", status);
         return (
           <>
             <Tag color={status ? "Green" : "Red"}>
@@ -49,7 +48,7 @@ function AllCategory() {
       render: (record) => {
         return (
           <>
-            <Link to={`/detail-category/${record.uuid}`}>
+            <Link to={`/detail-category/${record._id}`}>
               <div className="cursor-pointer">
                 <EditOutlined />
               </div>
@@ -62,7 +61,7 @@ function AllCategory() {
 
   async function fetchProductCategory() {
     try {
-      const res = await getAllCategories();
+      const res = await getAllCategories(token);
       dispatch(allCategory(res.data));
     } catch (error) {
       console.log("error: ", error);
@@ -93,9 +92,6 @@ function AllCategory() {
         pagination={{
           pageSize: 5,
           total: category.totalItems,
-          onChange: (page) => {
-            console.log(page);
-          },
         }}
         dataSource={category.data}
       />

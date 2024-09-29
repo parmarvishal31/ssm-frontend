@@ -9,9 +9,8 @@ import toast from "react-hot-toast";
 import { login, logout } from "../redux/auth/authSlice";
 import NotFound from "../pages/NotFound";
 import HomePage from "../components/HomePage";
-import AddShop from "../components/Category/AddCategory";
-import AllShop from "../components/Category/AllCategory";
-import DetailShop from "../components/Category/DetailCategory";
+import AddCategory from "../components/Category/AddCategory";
+import AllCategory from "../components/Category/AllCategory";
 function Index() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -40,9 +39,9 @@ function Index() {
       <Routes>
         <Route path="/" element={<Private />}>
           <Route path="/" element={<HomePage />}>
-            <Route path="/all-category" element={<AllShop />} />
-            <Route path="/add-category" element={<AddShop />} />
-            <Route path="/detail-category/:id" element={<DetailShop />} />
+            <Route path="/all-category" element={<AllCategory />} />
+            <Route path="/add-category" element={<AddCategory />} />
+            <Route path="/detail-category/:id" element={<AddCategory />} />
           </Route>
         </Route>
         <Route path="/" element={<Public />}>
