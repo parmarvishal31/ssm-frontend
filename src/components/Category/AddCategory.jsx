@@ -4,7 +4,12 @@ import { useFormik } from "formik";
 import { useEffect, useState } from "react";
 import { categorySchema } from "../../Schema/categorySchema";
 import toast from "react-hot-toast";
-import { createCategory, getCategorieById } from "../../api/categories";
+import {
+  createCategory,
+  deleteCategory,
+  getCategorieById,
+  updateCategory,
+} from "../../api/categories";
 import { useNavigate, useParams } from "react-router-dom";
 
 function AddCategory() {
@@ -13,7 +18,7 @@ function AddCategory() {
   const token = localStorage.getItem("token");
   const { id } = useParams();
   const handleSwitch = (e) => {
-    formik.values.status = e;
+    formik.setFieldValue("status", e);
   };
   const formik = useFormik({
     initialValues: {
@@ -25,7 +30,15 @@ function AddCategory() {
     validationSchema: categorySchema,
     onSubmit: async (values) => {
       if (id) {
-        console.log(values);
+        try {
+          const res = await updateCategory(values, id, token);
+          if (res?.data?.success) {
+            toast.success(res.data.message);
+            navigate("/all-category");
+          }
+        } catch (error) {
+          toast.error(error.response.data.message);
+        }
       } else {
         try {
           setIsLoading(true);
@@ -47,16 +60,32 @@ function AddCategory() {
     try {
       const res = await getCategorieById(id, token);
       if (res?.data?.success) {
-        console.log("res: ", res);
-        console.log(res?.data?.category);
         formik.setValues({ ...res?.data?.category });
       }
     } catch (error) {
-      console.log("error: ", error);
+      toast.error("Category not found.");
     }
   };
 
-  const deleteCategory = () => {};
+  const delCategory = async () => {
+    try {
+      setIsLoading(true);
+      const res = await deleteCategory(id, token);
+      if (res?.data?.success) {
+        toast.success(res.data.message || "Deleted.");
+        navigate("/all-category");
+      }
+    } catch (error) {
+      toast.error("Category not delete.");
+      navigate("/all-category");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCancel = () => {
+    navigate("/all-category");
+  };
 
   useEffect(() => {
     if (id) {
@@ -76,15 +105,14 @@ function AddCategory() {
             <Button htmlType="submit" type="primary">
               {id ? "UPDATE" : "ADD"}
             </Button>
-            <Button type="default">CANCLE</Button>
-            <Button
-              onChange={() => deleteCategory()}
-              type="primary"
-              danger
-              ghost
-            >
-              Delete
+            <Button onClick={() => handleCancel()} type="default">
+              CANCLE
             </Button>
+            {id && (
+              <Button onClick={() => delCategory()} type="primary" danger ghost>
+                Delete
+              </Button>
+            )}
           </Space>
         </header>
         <main>
@@ -148,8 +176,8 @@ function AddCategory() {
                   <label htmlFor="">Status</label>
                   <Switch
                     name="status"
-                    defaultChecked={false}
-                    // checked={formik.values.status}
+                    defaultChecked={formik.values.status}
+                    checked={formik.values.status}
                     onChange={handleSwitch}
                   />
                 </Space>

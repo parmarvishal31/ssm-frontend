@@ -3,10 +3,11 @@ import Search from "antd/es/transfer/search";
 import { EditOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import { getAllCategories } from "../../api/categories";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { allCategory } from "../../redux/categorySlice";
 function AllCategory() {
+  const [search, setSearch] = useState({ q: "" });
   const dispatch = useDispatch();
   const category = useSelector((state) => state.category.category);
   const token = localStorage.getItem("token");
@@ -61,7 +62,7 @@ function AllCategory() {
 
   async function fetchProductCategory() {
     try {
-      const res = await getAllCategories(token);
+      const res = await getAllCategories(token, search);
       dispatch(allCategory(res.data));
     } catch (error) {
       console.log("error: ", error);
@@ -70,13 +71,13 @@ function AllCategory() {
 
   useEffect(() => {
     fetchProductCategory();
-  }, []);
+  }, [search]);
   return (
     <>
       <header className="bg-slate-50 shadow-sm border-2 rounded-md p-5">
         <Space className="flex justify-between">
           <Search
-            onChange={(e) => console.log(e.target.value)}
+            onChange={(e) => setSearch({ ...search, q: e.target.value })}
             placeholder="search shop"
           />
           <div>
