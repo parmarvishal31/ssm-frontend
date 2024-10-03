@@ -1,6 +1,6 @@
 import axios from "axios";
-const PORT = "http://localhost:8000";
-// const PORT = import.meta.env.VITE_API_KEY;
+// const PORT = "http://localhost:8000";
+const PORT = import.meta.env.VITE_API_KEY;
 
 export const getAllCategories = async (token, queryParams) => {
   return axios.get(`${PORT}/api/v1/category`, {
