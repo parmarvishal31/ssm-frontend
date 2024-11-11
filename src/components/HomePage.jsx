@@ -38,6 +38,25 @@ const App = () => {
         },
       ],
     },
+    {
+      key: "5",
+      icon: <ShopOutlined />,
+      label: "Product",
+      children: [
+        {
+          key: "6",
+          icon: <HomeOutlined />,
+          label: "All",
+          link: "/all-product",
+        },
+        {
+          key: "7",
+          icon: <AppstoreAddOutlined />,
+          label: "Add",
+          link: "/add-product",
+        },
+      ],
+    },
   ];
   const {
     token: { colorBgContainer, borderRadiusLG },

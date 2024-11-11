@@ -11,6 +11,8 @@ import NotFound from "../pages/NotFound";
 import HomePage from "../components/HomePage";
 import AddCategory from "../components/Category/AddCategory";
 import AllCategory from "../components/Category/AllCategory";
+import AddProduct from "../components/Product/AddProduct";
+import AllProduct from "../components/Product/AllProduct";
 function Index() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -42,6 +44,9 @@ function Index() {
             <Route path="/all-category" element={<AllCategory />} />
             <Route path="/add-category" element={<AddCategory />} />
             <Route path="/detail-category/:id" element={<AddCategory />} />
+            <Route path="/all-product" element={<AllProduct />} />
+            <Route path="/add-product" element={<AddProduct />} />
+            <Route path="/detail-product/:id" element={<AddProduct />} />
           </Route>
         </Route>
         <Route path="/" element={<Public />}>

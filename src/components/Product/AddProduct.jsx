@@ -1,24 +1,49 @@
-import { Button, Divider, Form, Input, Space, Spin, Switch, Tabs } from "antd";
-import { InfoCircleOutlined, UploadOutlined } from "@ant-design/icons";
+import {
+  Button,
+  Col,
+  Divider,
+  Form,
+  Input,
+  Radio,
+  Row,
+  Space,
+  Spin,
+  Switch,
+  Tabs,
+} from "antd";
+import {
+  InfoCircleOutlined,
+  ShoppingOutlined,
+  UploadOutlined,
+} from "@ant-design/icons";
 import { useFormik } from "formik";
 import { useEffect, useState } from "react";
-import { categorySchema } from "../../Schema/categorySchema";
 import toast from "react-hot-toast";
-import {
-  createCategory,
-  deleteCategory,
-  getCategorieById,
-  updateCategory,
-} from "../../api/categories";
 import { useNavigate, useParams } from "react-router-dom";
+import { productSchema } from "../../Schema/productSchema";
+import {
+  createProduct,
+  deleteProduct,
+  getProductById,
+  updateProduct,
+} from "../../api/product";
+import TextArea from "antd/es/input/TextArea";
+import { useSelector } from "react-redux";
 
-function AddCategory() {
+function AddProduct() {
+  const category = useSelector((state) => state.category.category.data);
   const [isLoading, setIsLoading] = useState(false);
   const [imageFile, setImageFile] = useState(null);
   const [previewImage, setPreviewImage] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const { id } = useParams();
+
+  const onChange = (e) => {
+    setSelectedCategory(e.target.value);
+  };
 
   const handleSwitch = (e) => {
     formik.setFieldValue("status", e);
@@ -42,29 +67,30 @@ function AddCategory() {
   const formik = useFormik({
     initialValues: {
       name: "",
-      tag: "",
-      max: "",
+      description: "",
+      category_id: "",
       img: "",
       status: false,
     },
-    validationSchema: categorySchema,
+    validationSchema: productSchema,
     onSubmit: async (values) => {
       const formData = new FormData();
       formData.append("name", values.name);
-      formData.append("tag", values.tag);
-      formData.append("max", values.max);
       formData.append("status", values.status);
 
       if (imageFile) {
         formData.append("img", imageFile);
       }
+      if (selectedCategory) {
+        formData.append("category_id", selectedCategory);
+      }
 
       if (id) {
         try {
-          const res = await updateCategory(formData, id, token);
+          const res = await updateProduct(formData, id, token);
           if (res?.data?.success) {
             toast.success(res.data.message);
-            navigate("/all-category");
+            navigate("/all-product");
           }
         } catch (error) {
           toast.error(error.response.data.message);
@@ -72,10 +98,10 @@ function AddCategory() {
       } else {
         try {
           setIsLoading(true);
-          const res = await createCategory(formData, token);
+          const res = await createProduct(formData, token);
           if (res?.data?.success) {
             toast.success(res.data.message);
-            navigate("/all-category");
+            navigate("/all-product");
           }
         } catch (error) {
           toast.error(error.response.data.message);
@@ -86,41 +112,41 @@ function AddCategory() {
     },
   });
 
-  const getSingleCategory = async () => {
+  const getSingleProduct = async (id) => {
     try {
-      const res = await getCategorieById(id, token);
+      const res = await getProductById(id, token);
       if (res?.data?.success) {
-        formik.setValues({ ...res?.data?.category });
-        console.log("res?.data?.category: ", res?.data?.category);
+        formik.setValues({ ...res?.data?.product });
+        setSelectedCategory(res?.data?.product.category);
       }
     } catch (error) {
-      toast.error("Category not found.");
+      toast.error("product not found.");
     }
   };
 
-  const delCategory = async () => {
+  const delProduct = async () => {
     try {
       setIsLoading(true);
-      const res = await deleteCategory(id, token);
+      const res = await deleteProduct(id, token);
       if (res?.data?.success) {
         toast.success(res.data.message || "Deleted.");
-        navigate("/all-category");
+        navigate("/all-product");
       }
     } catch (error) {
-      toast.error("Category not delete.");
-      navigate("/all-category");
+      toast.error("product not delete.");
+      navigate("/all-product");
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleCancel = () => {
-    navigate("/all-category");
+    navigate("/all-product");
   };
 
   useEffect(() => {
     if (id) {
-      getSingleCategory();
+      getSingleProduct(id);
     }
   }, [id]);
 
@@ -141,7 +167,7 @@ function AddCategory() {
               CANCEL
             </Button>
             {id && (
-              <Button onClick={() => delCategory()} type="primary" danger ghost>
+              <Button onClick={() => delProduct()} type="primary" danger ghost>
                 Delete
               </Button>
             )}
@@ -164,7 +190,7 @@ function AddCategory() {
                     <Input
                       name="name"
                       id="name"
-                      placeholder="Enter category name"
+                      placeholder="Enter product name"
                       className="h-7 w-72"
                       onChange={formik.handleChange}
                       onBlur={formik.handleBlur}
@@ -178,27 +204,14 @@ function AddCategory() {
                   </Form.Item>
                 </Space>
                 <Space className="flex gap-8">
-                  <Form.Item label="Tag">
-                    <Input
-                      name="tag"
-                      id="tag"
-                      placeholder="Enter category tag"
+                  <Form.Item label="description">
+                    <TextArea
+                      name="Description"
+                      id="description"
+                      placeholder="Enter product description"
                       className="h-7 w-72"
                       onChange={formik.handleChange}
-                      value={formik.values.tag}
-                    />
-                  </Form.Item>
-                </Space>
-                <Space className="flex gap-8">
-                  <Form.Item label="Max Products">
-                    <Input
-                      name="max"
-                      id="max"
-                      type="number"
-                      placeholder="Max products number"
-                      className="h-7 w-72"
-                      onChange={formik.handleChange}
-                      value={formik.values.max}
+                      value={formik.values.description}
                     />
                   </Form.Item>
                 </Space>
@@ -214,13 +227,36 @@ function AddCategory() {
               </div>
               <Divider />
             </Tabs.TabPane>
+            (
+            <Tabs.TabPane
+              disabled={!id}
+              tab={
+                <>
+                  <ShoppingOutlined /> Category
+                </>
+              }
+              key="2"
+            >
+              <Radio.Group onChange={onChange} value={selectedCategory}>
+                <Row gutter={[16, 16]}>
+                  {category?.map((item, idx) => (
+                    <Col span={24} key={idx}>
+                      <Radio value={item._id}>
+                        {item.name.charAt(0).toUpperCase() + item.name.slice(1)}
+                      </Radio>
+                    </Col>
+                  ))}
+                </Row>
+              </Radio.Group>
+            </Tabs.TabPane>
+            )
             <Tabs.TabPane
               tab={
                 <>
                   <UploadOutlined /> Assets
                 </>
               }
-              key="2"
+              key="3"
             >
               <div className="flex flex-col justify-start items-start gap-4">
                 <label htmlFor="image_uploads" className="cursor-pointer">
@@ -239,10 +275,7 @@ function AddCategory() {
                           Image
                         </div>
                       ) : (
-                        <img
-                          src={formik.values?.img?.secure_url || ""}
-                          alt=""
-                        />
+                        <img src={formik.values.img.secure_url} alt="" />
                       )}
                     </div>
                   )}
@@ -264,4 +297,4 @@ function AddCategory() {
   );
 }
 
-export default AddCategory;
+export default AddProduct;
