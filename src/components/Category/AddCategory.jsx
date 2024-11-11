@@ -1,14 +1,4 @@
-import {
-  Button,
-  Divider,
-  Form,
-  Input,
-  Space,
-  Spin,
-  Switch,
-  Tabs,
-  Upload,
-} from "antd";
+import { Button, Divider, Form, Input, Space, Spin, Switch, Tabs } from "antd";
 import { InfoCircleOutlined, UploadOutlined } from "@ant-design/icons";
 import { useFormik } from "formik";
 import { useEffect, useState } from "react";
@@ -101,6 +91,7 @@ function AddCategory() {
       const res = await getCategorieById(id, token);
       if (res?.data?.success) {
         formik.setValues({ ...res?.data?.category });
+        console.log("res?.data?.category: ", res?.data?.category);
       }
     } catch (error) {
       toast.error("Category not found.");
@@ -231,16 +222,26 @@ function AddCategory() {
               }
               key="2"
             >
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col justify-start items-start gap-4">
                 <label htmlFor="image_uploads" className="cursor-pointer">
                   {previewImage ? (
-                    <img
-                      className="w-24 h-24 rounded-full m-auto"
-                      src={previewImage}
-                      alt="previewImage"
-                    />
+                    <div className="border-black border-2 rounded-md p-4">
+                      <img
+                        className="w-64 h-64 m-auto"
+                        src={previewImage}
+                        alt="previewImage"
+                      />
+                    </div>
                   ) : (
-                    <p>null</p>
+                    <div className="border-black border-2 rounded-md p-4">
+                      {!id ? (
+                        <div className="w-64 h-64 bg-gray-300 flex items-center justify-center text-black text-xl font-semibold">
+                          Image
+                        </div>
+                      ) : (
+                        <img src={formik.values.img.secure_url} alt="" />
+                      )}
+                    </div>
                   )}
                 </label>
                 <input
