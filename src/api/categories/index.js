@@ -24,7 +24,7 @@ export const getCategorieById = async (id, token) => {
 export const createCategory = async (data, token) => {
   return axios.post(`${PORT}/api/v1/category`, data, {
     headers: {
-      "Content-Type": "application/json",
+      "Content-Type": "multipart/form-data",
       Authorization: token,
     },
   });
@@ -33,7 +33,7 @@ export const createCategory = async (data, token) => {
 export const updateCategory = async (data, id, token) => {
   return axios.put(`${PORT}/api/v1/category/${id}`, data, {
     headers: {
-      "Content-Type": "application/json",
+      "Content-Type": "multipart/form-data",
       Authorization: token,
     },
   });

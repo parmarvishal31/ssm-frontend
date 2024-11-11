@@ -30,6 +30,7 @@ export default function LoginPgae() {
           toast.error("Server error");
         }
       } catch (error) {
+        console.log("error: ", error);
         toast.error(error.response.data.message);
       } finally {
         setIsLodding(false);

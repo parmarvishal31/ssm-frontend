@@ -1,5 +1,15 @@
-import { Button, Divider, Form, Input, Space, Spin, Switch, Tabs } from "antd";
-import { InfoCircleOutlined } from "@ant-design/icons";
+import {
+  Button,
+  Divider,
+  Form,
+  Input,
+  Space,
+  Spin,
+  Switch,
+  Tabs,
+  Upload,
+} from "antd";
+import { InfoCircleOutlined, UploadOutlined } from "@ant-design/icons";
 import { useFormik } from "formik";
 import { useEffect, useState } from "react";
 import { categorySchema } from "../../Schema/categorySchema";
@@ -14,24 +24,54 @@ import { useNavigate, useParams } from "react-router-dom";
 
 function AddCategory() {
   const [isLoading, setIsLoading] = useState(false);
+  const [imageFile, setImageFile] = useState(null);
+  const [previewImage, setPreviewImage] = useState("");
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const { id } = useParams();
+
   const handleSwitch = (e) => {
     formik.setFieldValue("status", e);
   };
+
+  function getImage(event) {
+    event.preventDefault();
+
+    const uploadedImage = event.target.files[0];
+
+    if (uploadedImage) {
+      setImageFile(uploadedImage);
+      const fileReader = new FileReader();
+      fileReader.readAsDataURL(uploadedImage);
+      fileReader.addEventListener("load", function () {
+        setPreviewImage(this.result);
+      });
+    }
+  }
+
   const formik = useFormik({
     initialValues: {
       name: "",
       tag: "",
       max: "",
+      img: "",
       status: false,
     },
     validationSchema: categorySchema,
     onSubmit: async (values) => {
+      const formData = new FormData();
+      formData.append("name", values.name);
+      formData.append("tag", values.tag);
+      formData.append("max", values.max);
+      formData.append("status", values.status);
+
+      if (imageFile) {
+        formData.append("img", imageFile);
+      }
+
       if (id) {
         try {
-          const res = await updateCategory(values, id, token);
+          const res = await updateCategory(formData, id, token);
           if (res?.data?.success) {
             toast.success(res.data.message);
             navigate("/all-category");
@@ -42,7 +82,7 @@ function AddCategory() {
       } else {
         try {
           setIsLoading(true);
-          const res = await createCategory(values, token);
+          const res = await createCategory(formData, token);
           if (res?.data?.success) {
             toast.success(res.data.message);
             navigate("/all-category");
@@ -92,6 +132,7 @@ function AddCategory() {
       getSingleCategory();
     }
   }, [id]);
+
   return (
     <>
       {isLoading && (
@@ -106,7 +147,7 @@ function AddCategory() {
               {id ? "UPDATE" : "ADD"}
             </Button>
             <Button onClick={() => handleCancel()} type="default">
-              CANCLE
+              CANCEL
             </Button>
             {id && (
               <Button onClick={() => delCategory()} type="primary" danger ghost>
@@ -120,13 +161,11 @@ function AddCategory() {
             <Tabs.TabPane
               tab={
                 <>
-                  <span>
-                    <InfoCircleOutlined /> Basic
-                  </span>
+                  <InfoCircleOutlined /> Basic
                 </>
               }
               className="mt-4"
-              key={1}
+              key="1"
             >
               <div className="flex flex-col gap-2">
                 <Space className="flex gap-8">
@@ -183,6 +222,36 @@ function AddCategory() {
                 </Space>
               </div>
               <Divider />
+            </Tabs.TabPane>
+            <Tabs.TabPane
+              tab={
+                <>
+                  <UploadOutlined /> Assets
+                </>
+              }
+              key="2"
+            >
+              <div className="flex flex-col gap-4">
+                <label htmlFor="image_uploads" className="cursor-pointer">
+                  {previewImage ? (
+                    <img
+                      className="w-24 h-24 rounded-full m-auto"
+                      src={previewImage}
+                      alt="previewImage"
+                    />
+                  ) : (
+                    <p>null</p>
+                  )}
+                </label>
+                <input
+                  type="file"
+                  className="hidden"
+                  id="image_uploads"
+                  name="image_uploads"
+                  accept=".jpg, .jpeg, .png, .svg"
+                  onChange={getImage}
+                />
+              </div>
             </Tabs.TabPane>
           </Tabs>
         </main>
